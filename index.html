@@ -7,7 +7,7 @@
     body {
       background-color: black;
       color: white;
-      font-family: "Arial", sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
       direction: rtl;
       display: flex;
@@ -17,56 +17,36 @@
       height: 100vh;
       margin: 0;
     }
-    #date {
-      font-size: 60px;
-      margin-bottom: 40px;
-    }
-    #parsha {
-      font-size: 48px;
-    }
+    #date { font-size: 60px; margin-bottom: 40px; }
+    #parsha { font-size: 48px; }
   </style>
+  <script>
+    function displayDate(data) {
+      document.getElementById("date").textContent = data.hebrew || "שגיאה בטעינת התאריך";
+    }
+    function displayParsha(data) {
+      const par = data.items.find(i=>i.category==='parashat');
+      document.getElementById("parsha").textContent = par ? `פרשת ${par.hebrew}` : "לא נמצאה פרשה לשבוע זה";
+    }
+    window.onload = function() {
+      const t = new Date();
+      const gy = t.getFullYear(), gm = t.getMonth()+1, gd = t.getDate();
+      // JSONP load date
+      let s = document.createElement('script');
+      s.src = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1&callback=displayDate`;
+      document.body.appendChild(s);
+      // JSONP load parsha
+      const sd = t.toISOString().split('T')[0];
+      const t2 = new Date(t); t2.setDate(t.getDate()+7);
+      const ed = t2.toISOString().split('T')[0];
+      s = document.createElement('script');
+      s.src = `https://www.hebcal.com/hebcal?cfg=json&start=${sd}&end=${ed}&maj=on&ss=on&mf=on&v=1&c=on&callback=displayParsha`;
+      document.body.appendChild(s);
+    }
+  </script>
 </head>
 <body>
   <div id="date">טוען תאריך עברי...</div>
   <div id="parsha">טוען פרשת השבוע...</div>
-
-  <script>
-    // Load Hebrew date from Hebcal API
-    const today = new Date();
-    const gy = today.getFullYear();
-    const gm = today.getMonth() + 1;
-    const gd = today.getDate();
-
-    const hebcalDateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`;
-
-    fetch(hebcalDateUrl)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById("date").textContent = data.hebrew;
-      })
-      .catch(() => {
-        document.getElementById("date").textContent = "שגיאה בטעינת התאריך";
-      });
-
-    // Load parsha for this week
-    const isoStart = today.toISOString().split("T")[0];
-    const future = new Date(today);
-    future.setDate(future.getDate() + 7);
-    const isoEnd = future.toISOString().split("T")[0];
-
-    const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${isoStart}&end=${isoEnd}&maj=on&ss=on&mf=on&v=1&c=on`;
-
-    fetch(parshaUrl)
-      .then(response => response.json())
-      .then(data => {
-        const parsha = data.items.find(item => item.category === "parashat");
-        document.getElementById("parsha").textContent = parsha
-          ? `פרשת ${parsha.hebrew}`
-          : "לא נמצאה פרשה לשבוע זה";
-      })
-      .catch(() => {
-        document.getElementById("parsha").textContent = "שגיאה בפרשת השבוע";
-      });
-  </script>
 </body>
 </html>
