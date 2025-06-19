@@ -32,16 +32,16 @@
       const t = new Date();
       const gy = t.getFullYear(), gm = t.getMonth()+1, gd = t.getDate();
       // JSONP load date
-      let s = document.createElement('script');
-      s.src = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1&callback=displayDate`;
-      document.body.appendChild(s);
+      let dateScript = document.createElement('script');
+dateScript.src = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1&callback=displayDate`;
+document.body.appendChild(dateScript);
       // JSONP load parsha
       const sd = t.toISOString().split('T')[0];
       const t2 = new Date(t); t2.setDate(t.getDate()+7);
       const ed = t2.toISOString().split('T')[0];
-      s = document.createElement('script');
-      s.src = `https://www.hebcal.com/hebcal?cfg=json&start=${sd}&end=${ed}&maj=on&ss=on&mf=on&v=1&c=on&callback=displayParsha`;
-      document.body.appendChild(s);
+     let parshaScript = document.createElement('script');
+parshaScript.src = `https://www.hebcal.com/hebcal?cfg=json&start=${sd}&end=${ed}&maj=on&ss=on&mf=on&v=1&c=on&callback=displayParsha`;
+document.body.appendChild(parshaScript);
     }
   </script>
 </head>
