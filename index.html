@@ -1,30 +1,70 @@
-<script>
-  async function loadHebcal() {
-    const t = new Date();
-    const yyyy = t.getFullYear(), mm = t.getMonth() + 1, dd = t.getDate();
-    const dateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${yyyy}&gm=${mm}&gd=${dd}&g2h=1`;
-    const start = t.toISOString().split("T")[0];
-    const t2 = new Date(t);
-    t2.setDate(t2.getDate() + 7);
-    const end = t2.toISOString().split("T")[0];
-    const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${start}&end=${end}&maj=on&ss=on&mf=on&v=1&c=on`;
-
-    try {
-      const [dateRes, parRes] = await Promise.all([
-        fetch(dateUrl), fetch(parshaUrl)
-      ]);
-      const dateData = await dateRes.json();
-      const parData = await parRes.json();
-
-      document.getElementById("date").textContent = dateData.hebrew;
-      const par = parData.items.find(i => i.category === "parashat");
-      document.getElementById("parsha").textContent = par ? `פרשת ${par.hebrew}` : "לא נמצאה פרשה לשבוע זה";
-    } catch (e) {
-      document.getElementById("date").textContent = "שגיאה בטעינת התאריך";
-      document.getElementById("parsha").textContent = "שגיאה בפרשת השבוע";
-      console.error(e);
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hebrew Date and Parsha</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      direction: rtl;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-  }
+    #date {
+      font-size: 60px;
+      margin-bottom: 40px;
+    }
+    #parsha {
+      font-size: 48px;
+    }
+  </style>
+</head>
+<body>
+  <div id="date">טוען תאריך עברי...</div>
+  <div id="parsha">טוען פרשת השבוע...</div>
 
-  document.addEventListener("DOMContentLoaded", loadHebcal);
-</script>
+  <!-- ✅ Move script to the bottom of body -->
+  <script>
+    async function loadHebcal() {
+      try {
+        const today = new Date();
+        const gy = today.getFullYear();
+        const gm = today.getMonth() + 1;
+        const gd = today.getDate();
+
+        const dateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`;
+        const start = today.toISOString().split("T")[0];
+        const endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + 7);
+        const end = endDate.toISOString().split("T")[0];
+        const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${start}&end=${end}&maj=on&ss=on&mf=on&v=1&c=on`;
+
+        const [dateRes, parshaRes] = await Promise.all([
+          fetch(dateUrl),
+          fetch(parshaUrl),
+        ]);
+
+        const dateData = await dateRes.json();
+        const parshaData = await parshaRes.json();
+
+        document.getElementById("date").textContent = dateData.hebrew;
+        const parsha = parshaData.items.find(i => i.category === "parashat");
+        document.getElementById("parsha").textContent = parsha ? `פרשת ${parsha.hebrew}` : "לא נמצאה פרשה לשבוע זה";
+      } catch (e) {
+        document.getElementById("date").textContent = "שגיאה בטעינת התאריך";
+        document.getElementById("parsha").textContent = "שגיאה בפרשת השבוע";
+        console.error("Hebcal Error:", e);
+      }
+    }
+
+    loadHebcal();
+  </script>
+</body>
+</html>
