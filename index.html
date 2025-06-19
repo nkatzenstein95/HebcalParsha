@@ -41,7 +41,7 @@
         const dateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`;
         const start = today.toISOString().split("T")[0];
         const t2 = new Date(today);
-        t2.setDate(today.getDate() + 7);
+        t2.setDate(today.getDate() + 10);
         const end = t2.toISOString().split("T")[0];
         const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${start}&end=${end}&maj=on&ss=on&mf=on&v=1&c=on`;
 
