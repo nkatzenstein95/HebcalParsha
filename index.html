@@ -5,71 +5,68 @@
   <title>Hebrew Date and Parsha</title>
   <style>
     body {
-      margin: 0;
       background-color: black;
       color: white;
-      font-family: Arial, sans-serif;
+      font-family: "Arial", sans-serif;
       text-align: center;
+      direction: rtl;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      direction: rtl;
+      margin: 0;
     }
-
     #date {
-      font-size: 64px;
+      font-size: 60px;
       margin-bottom: 40px;
     }
-
     #parsha {
       font-size: 48px;
     }
   </style>
-  <script type="text/javascript">
-    function displayHebrewDate(data) {
-      const dateDiv = document.getElementById("date");
-      if (data && data.hebrew) {
-        dateDiv.textContent = data.hebrew;
-      } else {
-        dateDiv.textContent = "שגיאה בטעינת התאריך";
-      }
-    }
-
-    function displayParsha(data) {
-      const parshaDiv = document.getElementById("parsha");
-      const parsha = data.items.find(item => item.category === "parashat");
-      parshaDiv.textContent = parsha ? `פרשת ${parsha.hebrew}` : "לא נמצאה פרשה לשבוע זה";
-    }
-
-    function loadHebcalData() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = today.getMonth() + 1;
-      const dd = today.getDate();
-
-      // Hebrew date JSONP
-      const dateScript = document.createElement('script');
-      dateScript.src = `https://www.hebcal.com/converter?cfg=json&gy=${yyyy}&gm=${mm}&gd=${dd}&g2h=1&callback=displayHebrewDate`;
-      document.body.appendChild(dateScript);
-
-      // Parsha for this week
-      const start = today.toISOString().split('T')[0];
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7);
-      const end = nextWeek.toISOString().split('T')[0];
-
-      const parshaScript = document.createElement('script');
-      parshaScript.src = `https://www.hebcal.com/hebcal?cfg=json&start=${start}&end=${end}&maj=on&ss=on&mf=on&v=1&c=on&callback=displayParsha`;
-      document.body.appendChild(parshaScript);
-    }
-
-    window.onload = loadHebcalData;
-  </script>
 </head>
 <body>
   <div id="date">טוען תאריך עברי...</div>
   <div id="parsha">טוען פרשת השבוע...</div>
+
+  <script>
+    // Load Hebrew date from Hebcal API
+    const today = new Date();
+    const gy = today.getFullYear();
+    const gm = today.getMonth() + 1;
+    const gd = today.getDate();
+
+    const hebcalDateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`;
+
+    fetch(hebcalDateUrl)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("date").textContent = data.hebrew;
+      })
+      .catch(() => {
+        document.getElementById("date").textContent = "שגיאה בטעינת התאריך";
+      });
+
+    // Load parsha for this week
+    const isoStart = today.toISOString().split("T")[0];
+    const future = new Date(today);
+    future.setDate(future.getDate() + 7);
+    const isoEnd = future.toISOString().split("T")[0];
+
+    const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${isoStart}&end=${isoEnd}&maj=on&ss=on&mf=on&v=1&c=on`;
+
+    fetch(parshaUrl)
+      .then(response => response.json())
+      .then(data => {
+        const parsha = data.items.find(item => item.category === "parashat");
+        document.getElementById("parsha").textContent = parsha
+          ? `פרשת ${parsha.hebrew}`
+          : "לא נמצאה פרשה לשבוע זה";
+      })
+      .catch(() => {
+        document.getElementById("parsha").textContent = "שגיאה בפרשת השבוע";
+      });
+  </script>
 </body>
 </html>
