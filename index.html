@@ -30,9 +30,8 @@
   <div id="date">טוען תאריך עברי...</div>
   <div id="parsha">טוען פרשת השבוע...</div>
 
-  <!-- ✅ Move script to the bottom of body -->
   <script>
-    async function loadHebcal() {
+    document.addEventListener("DOMContentLoaded", async () => {
       try {
         const today = new Date();
         const gy = today.getFullYear();
@@ -41,30 +40,39 @@
 
         const dateUrl = `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${gm}&gd=${gd}&g2h=1`;
         const start = today.toISOString().split("T")[0];
-        const endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 7);
-        const end = endDate.toISOString().split("T")[0];
+        const t2 = new Date(today);
+        t2.setDate(today.getDate() + 7);
+        const end = t2.toISOString().split("T")[0];
         const parshaUrl = `https://www.hebcal.com/hebcal?cfg=json&start=${start}&end=${end}&maj=on&ss=on&mf=on&v=1&c=on`;
 
         const [dateRes, parshaRes] = await Promise.all([
           fetch(dateUrl),
-          fetch(parshaUrl),
+          fetch(parshaUrl)
         ]);
+
+        if (!dateRes.ok || !parshaRes.ok) throw new Error("Network error");
 
         const dateData = await dateRes.json();
         const parshaData = await parshaRes.json();
 
-        document.getElementById("date").textContent = dateData.hebrew;
+        const dateEl = document.getElementById("date");
+        const parshaEl = document.getElementById("parsha");
+
+        if (!dateEl || !parshaEl) throw new Error("Missing elements");
+
+        dateEl.textContent = dateData.hebrew || "שגיאה בטעינת התאריך";
         const parsha = parshaData.items.find(i => i.category === "parashat");
-        document.getElementById("parsha").textContent = parsha ? `פרשת ${parsha.hebrew}` : "לא נמצאה פרשה לשבוע זה";
-      } catch (e) {
+        parshaEl.textContent = parsha ? `פרשת ${parsha.hebrew}` : "לא נמצאה פרשה לשבוע זה";
+
+      } catch (error) {
+        console.error("Hebcal error:", error);
         document.getElementById("date").textContent = "שגיאה בטעינת התאריך";
         document.getElementById("parsha").textContent = "שגיאה בפרשת השבוע";
-        console.error("Hebcal Error:", e);
       }
-    }
-
-    loadHebcal();
+    });
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
